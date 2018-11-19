@@ -1,7 +1,8 @@
-package com.example.demo.model;
+package com.mealky.rest.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -28,8 +29,10 @@ private String username;
 private String password;
 @Column(name="email")
 private String email;
-
-
+@Column(name="token")
+private String token = "not_a_token";
+@Column(name="token_date")
+private Date tokenDate;
 @ManyToMany(fetch = FetchType.LAZY,
 cascade = {
 		CascadeType.PERSIST,
@@ -37,12 +40,12 @@ cascade = {
 },
 mappedBy ="favourite")
 @JsonIgnoreProperties({"users","categories"})
-List<Meal> meals = new ArrayList<>();
+Set<Meal> meals = new HashSet<>();
 @JsonIgnore
-public List<Meal> getMeals() {
+public Set<Meal> getMeals() {
 	return meals;
 }
-public void setMeals(List<Meal> meals) {
+public void setMeals(Set<Meal> meals) {
 	this.meals = meals;
 }
 public long getId() {
@@ -57,19 +60,35 @@ public String getUsername() {
 public void setUsername(String username) {
 	this.username = username;
 }
-@JsonIgnore
+//@JsonIgnore
 public String getPassword() {
 	return password;
 }
 public void setPassword(String password) {
 	this.password = password;
 }
-@JsonIgnore
+//@JsonIgnore
 public String getEmail() {
 	return email;
 }
 public void setEmail(String email) {
 	this.email = email;
+}
+
+public String getToken() {
+	return token;
+}
+public void setToken(String token) {
+	this.token = token;
+}
+public Date getTokenDate() {
+	return tokenDate;
+}
+public void setTokenDate(Date tokenDate) {
+	this.tokenDate = tokenDate;
+}
+public User() {
+	super();
 }
 public User(String username, String password, String email) {
 	super();
@@ -77,8 +96,14 @@ public User(String username, String password, String email) {
 	this.password = password;
 	this.email = email;
 }
-public User() {
+
+public User(String username, String password, String email, String token, Date tokenDate) {
 	super();
+	this.username = username;
+	this.password = password;
+	this.email = email;
+	this.token = token;
+	this.tokenDate = tokenDate;
 }
 public User(long id, String username, String password, String email) {
 	super();
@@ -87,9 +112,14 @@ public User(long id, String username, String password, String email) {
 	this.password = password;
 	this.email = email;
 }
-@Override
-public String toString() {
-	return "User [id=" + id + ", username=" + username + ", password=" + password + ", email=" + email + "]";
+public User(long id, String username, String password, String email, String token, Date tokenDate) {
+	super();
+	this.id = id;
+	this.username = username;
+	this.password = password;
+	this.email = email;
+	this.token = token;
+	this.tokenDate = tokenDate;
 }
 
 }

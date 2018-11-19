@@ -1,7 +1,7 @@
-package com.example.demo.model;
+package com.mealky.rest.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -32,7 +32,7 @@ public class Meal {
 	private int prep_time;
 	@Column(name="preparation",length=5000)
 	private String preparation;
-	@Column(name="images")
+	@Column(name="images",length=5000)
 	private String images;
 	@Column(name="confirmed")
 	boolean confirmed;
@@ -61,11 +61,11 @@ public class Meal {
 		joinColumns = { @JoinColumn(name="user_id")},
 		inverseJoinColumns = { @JoinColumn(name="meal_id")})
 	@JsonIgnoreProperties({"favourite","meals"})
-	List<User> favourite = new ArrayList<>();
-	public List<User> getFavourite() {
+	Set<User> favourite = new HashSet<>();
+	public Set<User> getFavourite() {
 		return favourite;
 	}
-	public void setFavourite(List<User> favourite) {
+	public void setFavourite(Set<User> favourite) {
 		this.favourite = favourite;
 	}
 
@@ -76,16 +76,16 @@ public class Meal {
 			},
 			mappedBy ="meals")
 	@JsonIgnoreProperties("meals")
-	List<Category> categories = new ArrayList<>();
+	Set<Category> categories = new HashSet<>();
 	
 	@OneToMany(mappedBy = "meal",cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnoreProperties("meal")
-	List<MealIngredient> mealigredient = new ArrayList<>();
+	Set<MealIngredient> mealigredient = new HashSet<>();
 	
-	public List<MealIngredient> getMealigredient() {
+	public Set<MealIngredient> getMealigredient() {
 		return mealigredient;
 	}
-	public void setMealigredient(List<MealIngredient> mealigredient) {
+	public void setMealigredient(Set<MealIngredient> mealigredient) {
 		this.mealigredient = mealigredient;
 	}
 	public long getId() {
@@ -127,14 +127,14 @@ public class Meal {
 	public void setConfirmed(boolean confirmed) {
 		this.confirmed = confirmed;
 	}
-	public List<Category> getCategories() {
+	public Set<Category> getCategories() {
 		return categories;
 	}
-	public void setCategories(List<Category> categories) {
+	public void setCategories(Set<Category> categories) {
 		this.categories = categories;
 	}
 	public Meal(long id, String name, int prep_time, String preparation, String images, boolean confirmed, User author,
-			List<User> favourite, List<Category> categories, List<MealIngredient> mealigredient) {
+			Set<User> favourite, Set<Category> categories, Set<MealIngredient> mealigredient) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -148,7 +148,7 @@ public class Meal {
 		this.mealigredient = mealigredient;
 	}
 	public Meal(String name, int prep_time, String preparation, String images, boolean confirmed, User author,
-			List<User> favourite, List<Category> categories, List<MealIngredient> mealigredient) {
+			Set<User> favourite, Set<Category> categories, Set<MealIngredient> mealigredient) {
 		super();
 		this.name = name;
 		this.prep_time = prep_time;
@@ -169,12 +169,4 @@ public class Meal {
 		this.confirmed = confirmed;
 		this.author = author;
 	}
-	@Override
-	public String toString() {
-		return "Meal [id=" + id + ", name=" + name + ", prep_time=" + prep_time + ", preparation=" + preparation
-				+ ", images=" + images + ", confirmed=" + confirmed + ", author=" + author + ", favourite=" + favourite
-				+ ", categories=" + categories + "]";
-	}
-	
-	
 }

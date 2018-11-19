@@ -1,4 +1,4 @@
-package com.example.demo.model;
+package com.mealky.rest.model;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -16,6 +16,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity
 @Table(name="meal_ingredient")
 public class MealIngredient implements Serializable{
+
+	private static final long serialVersionUID = 7790375849350202175L;
 	@Column(name="meal")
 	private Meal meal;
 	@Column(name="ingredient")

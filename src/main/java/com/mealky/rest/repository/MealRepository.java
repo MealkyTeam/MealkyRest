@@ -1,8 +1,8 @@
-package com.example.demo.repository;
+package com.mealky.rest.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.demo.model.Meal;
+import com.mealky.rest.model.Meal;
 
 public interface MealRepository extends JpaRepository<Meal, Long> {
 

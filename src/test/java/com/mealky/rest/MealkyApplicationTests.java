@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.mealky.rest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
