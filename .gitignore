@@ -95,3 +95,4 @@ local.properties
 # Maven
 log/
 target/
+Procfile

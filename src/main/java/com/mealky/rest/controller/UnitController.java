@@ -50,4 +50,18 @@ public class UnitController {
 		}
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
+	
+	@PostMapping("/sec/units/all")
+	ResponseEntity<HttpStatus> addAllUnit(@RequestBody Unit[] unit)
+	{
+		try {
+			for(Unit u : unit)
+		repository.save(u);
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
 }

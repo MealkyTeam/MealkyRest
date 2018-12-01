@@ -16,15 +16,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name="ingredient")
 public class Ingredient {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	@Column(name="name")
 	private String name;
 	
+	
+	private Set<MealIngredient> mealingredient = new HashSet<>();
 	@OneToMany(mappedBy = "ingredient")
-	Set<MealIngredient> mealingredient = new HashSet<>();
 	@JsonIgnore
 	public Set<MealIngredient> getMealingredient() {
 		return mealingredient;
@@ -32,6 +29,8 @@ public class Ingredient {
 	public void setMealingredient(Set<MealIngredient> mealingredient) {
 		this.mealingredient = mealingredient;
 	}
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public long getId() {
 		return id;
 	}

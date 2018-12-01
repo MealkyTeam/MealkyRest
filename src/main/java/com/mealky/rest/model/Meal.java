@@ -1,5 +1,6 @@
 package com.mealky.rest.model;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,32 +16,41 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PostLoad;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.mealky.rest.model.wrapper.IngredientWrapper;
 
 @Entity
 @Table(name="meal")
 public class Meal {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	@Column(name="name")
 	private String name;
-	@Column(name="prep_time")
 	private int prep_time;
-	@Column(name="preparation",length=5000)
 	private String preparation;
-	@Column(name="images",length=5000)
 	private String images;
-	@Column(name="confirmed")
 	boolean confirmed;
+	private User author;
+	private Date created;
+	private Set<MealIngredient> mealingredient = new HashSet<>();
+	private Set<Category> categories = new HashSet<>();
+	private Set<IngredientWrapper> ingredients = new HashSet<>();
+	
+	public Meal() {
+		super();
+	}
+	
 	
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "author")
-	@JsonIgnoreProperties({"author","meals"})
-	private User author;
+	@JsonIgnoreProperties({"author","id","meals","password","email","token","tokenDate","confirmed"})
 	public User getAuthor() {
 		return author;
 	}
@@ -48,46 +58,26 @@ public class Meal {
 		this.author = author;
 	}
 	
-	public Meal() {
-		super();
-	}
 	
-	@ManyToMany(fetch = FetchType.LAZY,
-			cascade = {
-					CascadeType.PERSIST,
-					CascadeType.MERGE
-			})
-	@JoinTable(name="users",
-		joinColumns = { @JoinColumn(name="user_id")},
-		inverseJoinColumns = { @JoinColumn(name="meal_id")})
-	@JsonIgnoreProperties({"favourite","meals"})
-	Set<User> favourite = new HashSet<>();
-	public Set<User> getFavourite() {
-		return favourite;
-	}
-	public void setFavourite(Set<User> favourite) {
-		this.favourite = favourite;
-	}
+//	@ManyToMany(fetch = FetchType.LAZY,
+//			cascade = {
+//					CascadeType.PERSIST,
+//					CascadeType.MERGE
+//			})
+//	@JoinTable(name="users",
+//		joinColumns = { @JoinColumn(name="user_id")},
+//		inverseJoinColumns = { @JoinColumn(name="meal_id")})
+//	@JsonIgnoreProperties({"favourite","meals"})
+//	Set<User> favourite = new HashSet<>();
+//	public Set<User> getFavourite() {
+//		return favourite;
+//	}
+//	public void setFavourite(Set<User> favourite) {
+//		this.favourite = favourite;
+//	}
 
-	@ManyToMany(fetch = FetchType.LAZY,
-			cascade = {
-					CascadeType.PERSIST,
-					CascadeType.MERGE
-			},
-			mappedBy ="meals")
-	@JsonIgnoreProperties("meals")
-	Set<Category> categories = new HashSet<>();
-	
-	@OneToMany(mappedBy = "meal",cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonIgnoreProperties("meal")
-	Set<MealIngredient> mealigredient = new HashSet<>();
-	
-	public Set<MealIngredient> getMealigredient() {
-		return mealigredient;
-	}
-	public void setMealigredient(Set<MealIngredient> mealigredient) {
-		this.mealigredient = mealigredient;
-	}
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public long getId() {
 		return id;
 	}
@@ -106,12 +96,14 @@ public class Meal {
 	public void setPrep_time(int prep_time) {
 		this.prep_time = prep_time;
 	}
+	@Column(length=5000)
 	public String getPreparation() {
 		return preparation;
 	}
 	public void setPreparation(String preparation) {
 		this.preparation = preparation;
 	}
+	@Column(length=5000)
 	public String[] getImages() {
 		return images.split(";");
 	}
@@ -127,46 +119,53 @@ public class Meal {
 	public void setConfirmed(boolean confirmed) {
 		this.confirmed = confirmed;
 	}
+	
+	public Date getCreated() {
+		return created;
+	}
+
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+
+	@ManyToMany(fetch = FetchType.LAZY,
+			cascade = {
+					CascadeType.PERSIST,
+					CascadeType.MERGE
+			},
+			mappedBy ="meals")
+	@JsonIgnoreProperties("meals")
 	public Set<Category> getCategories() {
 		return categories;
 	}
 	public void setCategories(Set<Category> categories) {
 		this.categories = categories;
 	}
-	public Meal(long id, String name, int prep_time, String preparation, String images, boolean confirmed, User author,
-			Set<User> favourite, Set<Category> categories, Set<MealIngredient> mealigredient) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.prep_time = prep_time;
-		this.preparation = preparation;
-		this.images = images;
-		this.confirmed = confirmed;
-		this.author = author;
-		this.favourite = favourite;
-		this.categories = categories;
-		this.mealigredient = mealigredient;
+	
+	@OneToMany(mappedBy = "meal",cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnore
+	public Set<MealIngredient> getMealingredient() {
+		return mealingredient;
 	}
-	public Meal(String name, int prep_time, String preparation, String images, boolean confirmed, User author,
-			Set<User> favourite, Set<Category> categories, Set<MealIngredient> mealigredient) {
-		super();
-		this.name = name;
-		this.prep_time = prep_time;
-		this.preparation = preparation;
-		this.images = images;
-		this.confirmed = confirmed;
-		this.author = author;
-		this.favourite = favourite;
-		this.categories = categories;
-		this.mealigredient = mealigredient;
+	@JsonProperty
+	public void setMealingredient(Set<MealIngredient> mealingredient) {
+		this.mealingredient = mealingredient;
 	}
-	public Meal(String name, int prep_time, String preparation, String images, boolean confirmed, User author) {
-		super();
-		this.name = name;
-		this.prep_time = prep_time;
-		this.preparation = preparation;
-		this.images = images;
-		this.confirmed = confirmed;
-		this.author = author;
+	
+	@Transient
+	@JsonProperty
+	public Set<IngredientWrapper> getIngredients() {
+		return ingredients;
 	}
+
+	public void setIngredients(Set<IngredientWrapper> ingredients) {
+		this.ingredients = ingredients;
+	}
+	
+	@PostLoad
+	public void convertMItoIJ() {
+		for(MealIngredient mi : this.mealingredient)
+			ingredients.add(new IngredientWrapper(mi));
+	}
+	
 }

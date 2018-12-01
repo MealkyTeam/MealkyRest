@@ -20,27 +20,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity
 @Table(name="category")
 public class Category {
+	private long id;
+	private String name;
+	private Set<Meal> meals = new HashSet<Meal>();
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
-	
-	@Column(name="name")
-	private String name;
-
-	
-	@ManyToMany(fetch = FetchType.LAZY,
-			cascade = {
-					CascadeType.PERSIST,
-					CascadeType.MERGE
-			})
-	@JoinTable(name="category_meal",
-		joinColumns = { @JoinColumn(name="category_id")},
-		inverseJoinColumns = { @JoinColumn(name="meal_id")})
-	@JsonIgnoreProperties("categories")
-	Set<Meal> meals = new HashSet<Meal>();
-	
-	
 	public long getId() {
 		return id;
 	}
@@ -56,8 +41,16 @@ public class Category {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	@JsonIgnore
+	
+	@ManyToMany(fetch = FetchType.LAZY,
+			cascade = {
+					CascadeType.PERSIST,
+					CascadeType.MERGE
+			})
+	@JoinTable(name="category_meal",
+		joinColumns = { @JoinColumn(name="category_id")},
+		inverseJoinColumns = { @JoinColumn(name="meal_id")})
+	@JsonIgnoreProperties("categories")
 	public Set<Meal> getMeals() {
 		return meals;
 	}
@@ -87,11 +80,4 @@ public class Category {
 		this.name = name;
 		this.meals = meals;
 	}
-
-	@Override
-	public String toString() {
-		return "Category [id=" + id + ", name=" + name + ", meals="  + "]";
-	}
-	
-	
 }

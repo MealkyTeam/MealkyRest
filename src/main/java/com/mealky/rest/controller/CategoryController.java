@@ -47,4 +47,18 @@ public class CategoryController {
 		}
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
+	
+	@PostMapping("/sec/categories/all")
+	ResponseEntity<HttpStatus> addAllCategory(@RequestBody Category[] category)
+	{
+		try {
+			for(Category c : category)
+		repository.save(c);
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
 }

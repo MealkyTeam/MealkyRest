@@ -10,12 +10,11 @@ import javax.persistence.Table;
 @Entity
 @Table(name="unit")
 public class Unit {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	@Column(name="name")
 	private String name;
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public long getId() {
 		return id;
 	}
@@ -41,10 +40,4 @@ public class Unit {
 		super();
 		this.name = name;
 	}
-	@Override
-	public String toString() {
-		return "Unit [id=" + id + ", name=" + name + "]";
-	}
-	
-	
 }
