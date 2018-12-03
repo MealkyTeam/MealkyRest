@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +16,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.mealky.rest.model.User;
+import com.mealky.rest.model.UserConfirm;
 import com.mealky.rest.model.wrapper.MessageWrapper;
-import com.mealky.rest.model.wrapper.TokenWrapper;
 import com.mealky.rest.model.wrapper.UserWrapper;
+import com.mealky.rest.repository.UserConfirmRepository;
 import com.mealky.rest.repository.UserRepository;
+import com.mealky.rest.service.EmailSender;
 
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,6 +35,12 @@ public class UserController {
 	UserRepository repository;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	@Autowired
+	EmailSender email;
+	@Autowired
+	UserConfirmRepository ucrepo;
+	
+	
 	
 	@GetMapping("/sec/users")
 	ResponseEntity<List<User>> all()
@@ -65,6 +73,7 @@ public class UserController {
 				new MessageWrapper("Account with this email already exists."),HttpStatus.CONFLICT);
 		if(repository.findByUsername(user.getUsername())!=null) return new ResponseEntity<>(
 				new MessageWrapper("Account with this username already exists."),HttpStatus.CONFLICT);
+		UserConfirm uc = new UserConfirm();
 		try {
 			User u = new User();
 			u.setUsername(user.getUsername());
@@ -72,8 +81,18 @@ public class UserController {
 			u.setPassword(passwordEncoder.encode(user.getPassword()));
 			u.setConfirmed(false);
 			u.setTokenDate(new Date());
+			uc.setEmailToken(UUID.randomUUID().toString().replace("-", ""));
+			uc.setUser(u);
 		repository.save(u);
+		ucrepo.save(uc);
 		}catch(Exception e)
+		{
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		try {
+			email.send(uc);
+		}catch (Exception e)
 		{
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -83,7 +102,7 @@ public class UserController {
 	
 	private boolean checkEmail(String email)
 	{
-		String regex = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$";
+		String regex = "^([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)$";
 		Pattern pattern = Pattern.compile(regex);
 		return pattern.matcher(email).matches();
 	}
@@ -115,14 +134,14 @@ public class UserController {
 					u.setTokenDate(new Date());
 				try {	
 					repository.save(u);
-					return new ResponseEntity<>(new UserWrapper(u.getId(),u.getUsername(),u.getEmail()),HttpStatus.CREATED);
+					return new ResponseEntity<>(new UserWrapper(u.getId(),u.getUsername(),u.getEmail(),u.getToken()),HttpStatus.CREATED);
 					}
 				catch(Exception e){
 						e.printStackTrace();
 						return new ResponseEntity<>(new MessageWrapper("Something went wrong."),HttpStatus.INTERNAL_SERVER_ERROR);
 					}
 				}
-				return new ResponseEntity<>(new UserWrapper(u.getId(),u.getUsername(),u.getEmail()),HttpStatus.OK);
+				return new ResponseEntity<>(new UserWrapper(u.getId(),u.getUsername(),u.getEmail(),u.getToken()),HttpStatus.OK);
 			}
 			}
 			if(user.getPassword()==null && user.getEmail()==null)
@@ -139,7 +158,7 @@ public class UserController {
 				}
 				try {	
 					repository.save(u);
-					return new ResponseEntity<>(new TokenWrapper(u.getToken()),HttpStatus.OK);
+					return new ResponseEntity<>(new UserWrapper(u.getId(),u.getUsername(),u.getEmail(),u.getToken()),HttpStatus.OK);
 					}
 				catch(Exception e){
 						e.printStackTrace();
@@ -147,5 +166,29 @@ public class UserController {
 					}
 			}
 			return new ResponseEntity<>(new MessageWrapper("Wrong password."),HttpStatus.UNAUTHORIZED);	
+	}
+	
+	@GetMapping("/confirm")
+	public ResponseEntity<Object> accountConfirm(@RequestParam(name="s") String s)
+	{
+		if(s!=null)
+		{
+			try {
+			UserConfirm uc = ucrepo.findByEmailToken(s);
+			if(uc!=null)
+			{
+				User u = uc.getUser();
+				u.setConfirmed(true);
+				repository.save(u);
+				ucrepo.delete(uc);
+				return new ResponseEntity<>("Konto zostalo aktywowane.",HttpStatus.OK);
+			}
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 }

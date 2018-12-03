@@ -1,7 +1,5 @@
 package com.mealky.rest.security;
 
-import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,12 +17,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	private static String REALM="Mealky REST";
 	
 	@Autowired
-	DataSource dataSource;
-	
-	@Autowired
 	public void configureGlobalSecurity(AuthenticationManagerBuilder auth) throws Exception {
 		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-		auth.inMemoryAuthentication().withUser("name").password(encoder.encode("password")).roles("ADMIN");
+		auth.inMemoryAuthentication().withUser("***").password(encoder.encode("***")).roles("ADMIN");
 	}
 	
 	@Override
