@@ -24,8 +24,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.mealky.rest.model.wrapper.IngredientWrapper;
 
 @Entity
@@ -50,7 +48,7 @@ public class Meal {
 	
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "author")
-	@JsonIgnoreProperties({"author","id","meals","password","email","token","tokenDate","confirmed"})
+	@JsonIgnoreProperties({"meals","password","email","token","tokenDate","confirmed"})
 	public User getAuthor() {
 		return author;
 	}

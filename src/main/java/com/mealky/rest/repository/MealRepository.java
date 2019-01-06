@@ -12,4 +12,5 @@ import com.mealky.rest.model.Meal;
 public interface MealRepository extends JpaRepository<Meal, Long> {
 
 	public Page<Meal> findDistinctByCategoriesIn(List<Category> optional,Pageable pageable);
+	public Page<Meal> findDistinctByNameIgnoreCaseLike(String query,Pageable pageable);
 }

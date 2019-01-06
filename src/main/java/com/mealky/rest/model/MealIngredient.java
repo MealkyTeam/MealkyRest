@@ -1,7 +1,6 @@
 package com.mealky.rest.model;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;

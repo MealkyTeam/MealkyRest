@@ -58,7 +58,6 @@ public class User {
 		public void setUsername(String username) {
 			this.username = username;
 		}
-		//@JsonIgnore
 		@Column(length=100)
 		public String getPassword() {
 			return password;
@@ -66,7 +65,6 @@ public class User {
 		public void setPassword(String password) {
 			this.password = password;
 		}
-		//@JsonIgnore
 		public String getEmail() {
 			return email;
 		}

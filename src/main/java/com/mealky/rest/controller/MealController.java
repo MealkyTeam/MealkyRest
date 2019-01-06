@@ -27,6 +27,7 @@ import com.mealky.rest.model.Meal;
 import com.mealky.rest.model.MealIngredient;
 import com.mealky.rest.model.Unit;
 import com.mealky.rest.model.User;
+import com.mealky.rest.model.wrapper.JsonWrapper;
 import com.mealky.rest.repository.CategoryRepository;
 import com.mealky.rest.repository.IngredientRepository;
 import com.mealky.rest.repository.MealRepository;
@@ -45,20 +46,6 @@ public class MealController {
 	UnitRepository unitrepo;
 	@Autowired
 	IngredientRepository ingrepo;
-//	@GetMapping("/meals")
-//	List<Meal> all()
-//	{
-//		return repository.findAll();
-//	}
-
-	@RequestMapping(value="/meals",method=RequestMethod.GET)
-	ResponseEntity<Page<Meal>> allPage(@PageableDefault(size = Integer.MAX_VALUE) Pageable pageable)
-	{
-		Page<Meal> list = repository.findAll(pageable);
-		if(list!=null)
-		return new ResponseEntity<>(list, HttpStatus.OK);
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
 	
 	@GetMapping("/meals/{id}")
 	ResponseEntity<Optional<Meal>> one(@PathVariable long id)
@@ -72,13 +59,24 @@ public class MealController {
 	@RequestMapping(value="/meals/category",method=RequestMethod.GET)
 	ResponseEntity<Page<Meal>> allByCategoryPage(@RequestParam(name="id") List<Long> id,@PageableDefault(size = Integer.MAX_VALUE) Pageable pageable)
 	{
-		System.out.println(id);
 		Page<Meal> list = repository.findDistinctByCategoriesIn(crepo.findAllById(id),pageable);
 		if(list!=null)
 		return new ResponseEntity<>(list, HttpStatus.OK);
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
-
+	
+	@RequestMapping(value="/meals",method=RequestMethod.GET)
+	ResponseEntity<Object> allByNamePage(@RequestParam(name="q",required=false) String query,@PageableDefault(size = Integer.MAX_VALUE) Pageable pageable)
+	{
+		if(query==null) query="";
+		Page<Meal> list = repository.findDistinctByNameIgnoreCaseLike("%"+query+"%",pageable);
+		if(list!=null) {
+			String s = JsonWrapper.removeFieldsFromPageable(list);
+			if(s!=null)
+		return new ResponseEntity<>(s, HttpStatus.OK);
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
 	@PostMapping("/sec/meals")
 	ResponseEntity<HttpStatus> addMeal(@RequestBody Meal meal)
 	{
@@ -120,7 +118,7 @@ public class MealController {
 	@PostMapping("/sec/meals/all")
 	ResponseEntity<HttpStatus> addAllMeal(@RequestBody Meal[] meals)
 	{
-		for(Meal meal : meals)
+		for(Meal meal : meals) {
 		try {
 		User author = urepo.findById(meal.getAuthor().getId()).orElse(new User());
 		Set<MealIngredient> mllist = new HashSet<>();
@@ -152,6 +150,7 @@ public class MealController {
 		{
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 		}
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}

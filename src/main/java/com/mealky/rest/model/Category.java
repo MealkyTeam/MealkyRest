@@ -8,12 +8,11 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.persistence.JoinColumn;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
@@ -40,7 +39,7 @@ public class Category {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	@ManyToMany(fetch = FetchType.LAZY,
 			cascade = {
 					CascadeType.PERSIST,
@@ -56,8 +55,8 @@ public class Category {
 
 	public void setMeals(Set<Meal> meals) {
 		this.meals = meals;
-	}
-
+}
+	
 	public Category() {
 		super();
 	}

@@ -18,10 +18,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.mealky.rest.model.PasswordResetToken;
 import com.mealky.rest.model.User;
-import com.mealky.rest.model.UserConfirm;
+import com.mealky.rest.model.UserConfirmToken;
 import com.mealky.rest.model.wrapper.MessageWrapper;
 import com.mealky.rest.model.wrapper.UserWrapper;
+import com.mealky.rest.repository.PasswordResetTokenRepository;
 import com.mealky.rest.repository.UserConfirmRepository;
 import com.mealky.rest.repository.UserRepository;
 import com.mealky.rest.service.EmailSender;
@@ -36,9 +38,11 @@ public class UserController {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 	@Autowired
-	EmailSender email;
+	EmailSender emailservice;
 	@Autowired
 	UserConfirmRepository ucrepo;
+	@Autowired
+	PasswordResetTokenRepository passrepo;
 	
 	
 	
@@ -73,9 +77,9 @@ public class UserController {
 				new MessageWrapper("Account with this email already exists."),HttpStatus.CONFLICT);
 		if(repository.findByUsername(user.getUsername())!=null) return new ResponseEntity<>(
 				new MessageWrapper("Account with this username already exists."),HttpStatus.CONFLICT);
-		UserConfirm uc = new UserConfirm();
+		UserConfirmToken uc = new UserConfirmToken();
+		User u = new User();
 		try {
-			User u = new User();
 			u.setUsername(user.getUsername());
 			u.setEmail(user.getEmail());
 			u.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -85,15 +89,11 @@ public class UserController {
 			uc.setUser(u);
 		repository.save(u);
 		ucrepo.save(uc);
+		emailservice.sendConfirmMail(uc);
 		}catch(Exception e)
 		{
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		try {
-			email.send(uc);
-		}catch (Exception e)
-		{
+			ucrepo.delete(uc);
+			repository.delete(u);
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -169,12 +169,12 @@ public class UserController {
 	}
 	
 	@GetMapping("/confirm")
-	public ResponseEntity<Object> accountConfirm(@RequestParam(name="s") String s)
+	public ResponseEntity<Object> accountConfirm(@RequestParam(name="token",required=false) String token)
 	{
-		if(s!=null)
+		if(token!=null)
 		{
 			try {
-			UserConfirm uc = ucrepo.findByEmailToken(s);
+			UserConfirmToken uc = ucrepo.findByEmailToken(token);
 			if(uc!=null)
 			{
 				User u = uc.getUser();
@@ -191,4 +191,80 @@ public class UserController {
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
+	
+	@PostMapping("/changepassword")
+	public ResponseEntity<Object> changePassword(@RequestParam(name="email",required=false) String email,@RequestParam(name="oldpass",required=false) String currentpassword,
+			@RequestParam(name="newpass",required=false) String newpass,@RequestParam(name="confnewpass",required=false) String confnewpass)
+	{
+		if(currentpassword==null || email==null || newpass==null || confnewpass==null) return new ResponseEntity<>("Something went wrong",HttpStatus.NOT_FOUND);
+		User user = repository.findByEmail(email);
+		if(user!=null) {
+			if(passwordEncoder.matches(currentpassword,user.getPassword())) {
+				if(newpass.equals(confnewpass) && checkPasswordLength(newpass) && checkPasswordLength(confnewpass)) {
+		user.setPassword(passwordEncoder.encode(newpass));
+		repository.save(user);
+		return new ResponseEntity<Object>(
+				"New password has been set.",HttpStatus.OK);
+				}
+				return new ResponseEntity<>(
+						"New passwords do not matches or are too short.",HttpStatus.CONFLICT);
+			}
+			return new ResponseEntity<>(
+					"Wrong password.",HttpStatus.CONFLICT);
+		}
+		return new ResponseEntity<>(
+				"Username with this email does not exists.",HttpStatus.NOT_FOUND);
+	}
+
+	@PostMapping("/resetpassword")
+	public ResponseEntity<Object> sendResetPasswordToken(@RequestParam(name="email",required=false) String email)
+	{
+		if(email!=null) {
+		User user = repository.findByEmail(email);
+		if(user!=null)
+		{
+			PasswordResetToken prt = passrepo.findByUser_Email(email);
+			if(prt==null)
+			prt = new PasswordResetToken();
+			prt.setToken(UUID.randomUUID().toString().replace("-", ""));
+			prt.setUser(user);
+			passrepo.save(prt);
+			try {
+				emailservice.sendResetPassMail(prt);
+			}catch (Exception e)
+			{
+				e.printStackTrace();
+				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			return new ResponseEntity<Object>("Na maila wyslano link resetujacy.",HttpStatus.OK);
+		}
+		return new ResponseEntity<Object>("Nie ma takiego uzytkownika.",HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<Object>("Cos poszlo nie tak.",HttpStatus.NOT_FOUND);
+	}
+	
+	@PostMapping("/setpassword")
+	public ResponseEntity<Object> setNewPassword(@RequestParam(name="token",required=false) String token,@RequestParam(name="email",required=false) String email,
+			@RequestParam(name="newpass",required=false) String newpass,@RequestParam(name="confnewpass",required=false) String confnewpass)
+	{
+		if(token==null || email==null || newpass==null || confnewpass==null) return new ResponseEntity<>("Something went wrong",HttpStatus.NOT_FOUND);
+		PasswordResetToken prt = passrepo.findByToken(token);
+		if(prt!=null)
+		{
+			User user = prt.getUser();
+			if(user.getEmail().equals(email)) {
+				if(newpass.equals(confnewpass) && checkPasswordLength(newpass) && checkPasswordLength(confnewpass)) {
+					user.setPassword(passwordEncoder.encode(newpass));
+					repository.save(user);
+					passrepo.delete(prt);
+		return new ResponseEntity<Object>("Nowe haslo zostalo ustawione",HttpStatus.OK);
+				}
+				return new ResponseEntity<>(
+						"New passwords do not matches or are too short.",HttpStatus.CONFLICT);
+			}return new ResponseEntity<>(
+					"Email does not match.",HttpStatus.CONFLICT);
+		}
+		return new ResponseEntity<>("Not found.",HttpStatus.NOT_FOUND);
+	}
+	
 }
