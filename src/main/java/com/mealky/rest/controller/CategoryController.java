@@ -17,48 +17,45 @@ import com.mealky.rest.repository.CategoryRepository;
 
 @RestController
 public class CategoryController {
-	@Autowired
-	CategoryRepository repository;
-	@GetMapping("/sec/categories")
-	ResponseEntity<List<Category>> all()
-	{
-		List<Category> list = repository.findAll();
-		if(list!=null)
-		return new ResponseEntity<>(list, HttpStatus.OK);
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-	@GetMapping("/sec/categories/{id}")
-	ResponseEntity<Optional<Category>> one(@PathVariable long id)
-	{
-		Optional<Category> c = repository.findById(id);
-		if(c!=null)
-			return new ResponseEntity<>(c, HttpStatus.OK);
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-	@PostMapping("/sec/categories")
-	ResponseEntity<HttpStatus> addCategory(@RequestBody Category category)
-	{
-		try {
-		repository.save(category);
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.CREATED);
-	}
-	
-	@PostMapping("/sec/categories/all")
-	ResponseEntity<HttpStatus> addAllCategory(@RequestBody Category[] category)
-	{
-		try {
-			for(Category c : category)
-		repository.save(c);
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.CREATED);
-	}
+    @Autowired
+    CategoryRepository repository;
+
+    @GetMapping("/sec/categories")
+    ResponseEntity<List<Category>> all() {
+        List<Category> list = repository.findAll();
+        if (list != null)
+            return new ResponseEntity<>(list, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/sec/categories/{id}")
+    ResponseEntity<Optional<Category>> one(@PathVariable long id) {
+        Optional<Category> c = repository.findById(id);
+        if (c != null)
+            return new ResponseEntity<>(c, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/sec/categories")
+    ResponseEntity<HttpStatus> addCategory(@RequestBody Category category) {
+        try {
+            repository.save(category);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/sec/categories/all")
+    ResponseEntity<HttpStatus> addAllCategory(@RequestBody Category[] category) {
+        try {
+            for (Category c : category)
+                repository.save(c);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
 }
