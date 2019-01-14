@@ -138,7 +138,7 @@ public class UserController {
             }
         }
         if (user.getPassword() == null && user.getEmail() == null)
-            return new ResponseEntity<>(ApiError.INVALID_TOKEN.error(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>( new MessageWrapper(ApiError.INVALID_TOKEN.error()), HttpStatus.NOT_FOUND);
 
         u = repository.findByEmail(user.getEmail());
         if (u == null)
@@ -185,7 +185,7 @@ public class UserController {
     public ResponseEntity<Object> changePassword(@RequestParam(name = "email", required = false) String email, @RequestParam(name = "oldpass", required = false) String currentpassword,
                                                  @RequestParam(name = "newpass", required = false) String newpass, @RequestParam(name = "confnewpass", required = false) String confnewpass) {
         if (currentpassword == null || email == null || newpass == null || confnewpass == null)
-            return new ResponseEntity<>(ApiError.SOMETHING_WENT_WRONG.error(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>( new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()), HttpStatus.NOT_FOUND);
         User user = repository.findByEmail(email);
         if (user != null) {
             if (passwordEncoder.matches(currentpassword, user.getPassword())) {
@@ -196,13 +196,13 @@ public class UserController {
                             ApiResponse.NEW_PASSWORD_SET.response(), HttpStatus.OK);
                 }
                 return new ResponseEntity<>(
-                        ApiError.PASSWORDS_DOES_NOT_MATCH.error(), HttpStatus.CONFLICT);
+						new MessageWrapper(ApiError.PASSWORDS_DOES_NOT_MATCH.error()), HttpStatus.CONFLICT);
             }
             return new ResponseEntity<>(
-                    ApiError.WRONG_PASSWORD.error(), HttpStatus.CONFLICT);
+					new MessageWrapper(ApiError.WRONG_PASSWORD.error()), HttpStatus.CONFLICT);
         }
         return new ResponseEntity<>(
-                ApiError.NO_SUCH_USER.error(), HttpStatus.NOT_FOUND);
+				new MessageWrapper(ApiError.NO_SUCH_USER.error()), HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/resetpassword")
@@ -224,16 +224,16 @@ public class UserController {
                 }
                 return new ResponseEntity<Object>(ApiResponse.RESET_LINK_SENT.response(), HttpStatus.OK);
             }
-            return new ResponseEntity<Object>(ApiError.NO_SUCH_USER.error(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<Object>( new MessageWrapper(ApiError.NO_SUCH_USER.error()), HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<Object>(ApiError.SOMETHING_WENT_WRONG.error(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<Object>( new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()), HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/setpassword")
     public ResponseEntity<Object> setNewPassword(@RequestParam(name = "token", required = false) String token, @RequestParam(name = "email", required = false) String email,
                                                  @RequestParam(name = "newpass", required = false) String newpass, @RequestParam(name = "confnewpass", required = false) String confnewpass) {
         if (token == null || email == null || newpass == null || confnewpass == null)
-            return new ResponseEntity<>(ApiError.SOMETHING_WENT_WRONG.error(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>( new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()), HttpStatus.NOT_FOUND);
         PasswordResetToken prt = passrepo.findByToken(token);
         if (prt != null) {
             User user = prt.getUser();
@@ -245,12 +245,12 @@ public class UserController {
                     return new ResponseEntity<Object>(ApiResponse.NEW_PASSWORD_SET.response(), HttpStatus.OK);
                 }
                 return new ResponseEntity<>(
-                        ApiError.PASSWORDS_DOES_NOT_MATCH.error(), HttpStatus.CONFLICT);
+						new MessageWrapper(ApiError.PASSWORDS_DOES_NOT_MATCH.error()), HttpStatus.CONFLICT);
             }
             return new ResponseEntity<>(
-                    ApiError.EMAILS_DOES_NOT_MATCH.error(), HttpStatus.CONFLICT);
+					new MessageWrapper(ApiError.EMAILS_DOES_NOT_MATCH.error()), HttpStatus.CONFLICT);
         }
-        return new ResponseEntity<>(ApiError.SOMETHING_WENT_WRONG.error(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>( new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()), HttpStatus.NOT_FOUND);
     }
 
 }
