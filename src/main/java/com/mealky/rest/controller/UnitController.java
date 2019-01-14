@@ -21,55 +21,49 @@ import com.mealky.rest.repository.UnitRepository;
 
 @RestController
 public class UnitController {
-	@Autowired
-	UnitRepository repository;
-	
-	@GetMapping("/sec/units")
-	ResponseEntity<Object> all(@RequestParam(name="q",required=false) String query,@PageableDefault(size = Integer.MAX_VALUE) Pageable pageable)
-	{
-		if(query==null) query="";
-		Page<Unit> list = repository.findDistinctByNameIgnoreCaseLike("%"+query+"%",pageable);
-		if(list!=null) {
-			String s = JsonWrapper.removeFieldsFromPageable(list);
-			if(s!=null)
-		return new ResponseEntity<>(s, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @Autowired
+    UnitRepository repository;
 
-	@GetMapping("/sec/units/{id}")
-	ResponseEntity<Optional<Unit>> one(@PathVariable long id)
-	{
-		Optional<Unit> c = repository.findById(id);
-		if(c!=null)
-			return new ResponseEntity<>(c, HttpStatus.OK);
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @GetMapping("/sec/units")
+    ResponseEntity<Object> all(@RequestParam(name = "q", required = false) String query, @PageableDefault(size = Integer.MAX_VALUE) Pageable pageable) {
+        if (query == null) query = "";
+        Page<Unit> list = repository.findDistinctByNameIgnoreCaseLike("%" + query + "%", pageable);
+        if (list != null) {
+            String s = JsonWrapper.removeFieldsFromPageable(list);
+            if (s != null)
+                return new ResponseEntity<>(s, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
 
-	@PostMapping("/sec/units")
-	ResponseEntity<HttpStatus> addUnit(@RequestBody Unit unit)
-	{
-		try {
-		repository.save(unit);
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.CREATED);
-	}
-	
-	@PostMapping("/sec/units/all")
-	ResponseEntity<HttpStatus> addAllUnit(@RequestBody Unit[] unit)
-	{
-		try {
-			for(Unit u : unit)
-		repository.save(u);
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.CREATED);
-	}
+    @GetMapping("/sec/units/{id}")
+    ResponseEntity<Optional<Unit>> one(@PathVariable long id) {
+        Optional<Unit> c = repository.findById(id);
+        if (c != null)
+            return new ResponseEntity<>(c, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/sec/units")
+    ResponseEntity<HttpStatus> addUnit(@RequestBody Unit unit) {
+        try {
+            repository.save(unit);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/sec/units/all")
+    ResponseEntity<HttpStatus> addAllUnit(@RequestBody Unit[] unit) {
+        try {
+            for (Unit u : unit)
+                repository.save(u);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
 }

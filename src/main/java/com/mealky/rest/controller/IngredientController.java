@@ -21,55 +21,49 @@ import com.mealky.rest.repository.IngredientRepository;
 
 @RestController
 public class IngredientController {
-	@Autowired
-	IngredientRepository repository;
+    @Autowired
+    IngredientRepository repository;
 
-	@GetMapping("/sec/ingredients")
-	ResponseEntity<Object> all(@RequestParam(name="q",required=false) String query,@PageableDefault(size = Integer.MAX_VALUE) Pageable pageable)
-	{
-		if(query==null) query="";
-		Page<Ingredient> list = repository.findDistinctByNameIgnoreCaseLike("%"+query+"%",pageable);
-		if(list!=null) {
-			String s = JsonWrapper.removeFieldsFromPageable(list);
-			if(s!=null)
-		return new ResponseEntity<>(s, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-	
-	@GetMapping("/sec/ingredients/{id}")
-	ResponseEntity<Optional<Ingredient>> one(@PathVariable long id)
-	{
-		Optional<Ingredient> c = repository.findById(id);
-		if(c!=null)
-			return new ResponseEntity<>(c, HttpStatus.OK);
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @GetMapping("/sec/ingredients")
+    ResponseEntity<Object> all(@RequestParam(name = "q", required = false) String query, @PageableDefault(size = Integer.MAX_VALUE) Pageable pageable) {
+        if (query == null) query = "";
+        Page<Ingredient> list = repository.findDistinctByNameIgnoreCaseLike("%" + query + "%", pageable);
+        if (list != null) {
+            String s = JsonWrapper.removeFieldsFromPageable(list);
+            if (s != null)
+                return new ResponseEntity<>(s, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
 
-	@PostMapping("/sec/ingredients")
-	ResponseEntity<HttpStatus> addIngredient(@RequestBody Ingredient ingredient)
-	{
-		try {
-		repository.save(ingredient);
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.CREATED);
-	}
-	
-	@PostMapping("/sec/ingredients/all")
-	ResponseEntity<HttpStatus> addAllIngredient(@RequestBody Ingredient[] ingredient)
-	{
-		try {
-			for(Ingredient i : ingredient)
-		repository.save(i);
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.CREATED);
-	}
+    @GetMapping("/sec/ingredients/{id}")
+    ResponseEntity<Optional<Ingredient>> one(@PathVariable long id) {
+        Optional<Ingredient> c = repository.findById(id);
+        if (c != null)
+            return new ResponseEntity<>(c, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/sec/ingredients")
+    ResponseEntity<HttpStatus> addIngredient(@RequestBody Ingredient ingredient) {
+        try {
+            repository.save(ingredient);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/sec/ingredients/all")
+    ResponseEntity<HttpStatus> addAllIngredient(@RequestBody Ingredient[] ingredient) {
+        try {
+            for (Ingredient i : ingredient)
+                repository.save(i);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
 }

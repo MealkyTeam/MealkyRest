@@ -36,122 +36,114 @@ import com.mealky.rest.repository.UserRepository;
 
 @RestController
 public class MealController {
-	@Autowired
-	MealRepository repository;
-	@Autowired
-	UserRepository urepo;
-	@Autowired
-	CategoryRepository crepo;
-	@Autowired
-	UnitRepository unitrepo;
-	@Autowired
-	IngredientRepository ingrepo;
-	
-	@GetMapping("/meals/{id}")
-	ResponseEntity<Optional<Meal>> one(@PathVariable long id)
-	{
-		Optional<Meal> c = repository.findById(id);
-		if(c!=null)
-			return new ResponseEntity<>(c, HttpStatus.OK);
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-	
-	@RequestMapping(value="/meals/category",method=RequestMethod.GET)
-	ResponseEntity<Page<Meal>> allByCategoryPage(@RequestParam(name="id") List<Long> id,@PageableDefault(size = Integer.MAX_VALUE) Pageable pageable)
-	{
-		Page<Meal> list = repository.findDistinctByCategoriesIn(crepo.findAllById(id),pageable);
-		if(list!=null)
-		return new ResponseEntity<>(list, HttpStatus.OK);
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-	
-	@RequestMapping(value="/meals",method=RequestMethod.GET)
-	ResponseEntity<Object> allByNamePage(@RequestParam(name="q",required=false) String query,@PageableDefault(size = Integer.MAX_VALUE) Pageable pageable)
-	{
-		if(query==null) query="";
-		Page<Meal> list = repository.findDistinctByNameIgnoreCaseLike("%"+query+"%",pageable);
-		if(list!=null) {
-			String s = JsonWrapper.removeFieldsFromPageable(list);
-			if(s!=null)
-		return new ResponseEntity<>(s, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-	@PostMapping("/sec/meals")
-	ResponseEntity<HttpStatus> addMeal(@RequestBody Meal meal)
-	{
-		try {
-		User author = urepo.findById(meal.getAuthor().getId()).orElse(new User());
-		Set<MealIngredient> mllist = new HashSet<>();
-		for(MealIngredient ml : meal.getMealingredient()) {
-			MealIngredient tmp = new MealIngredient(meal, ingrepo.findById(
-					ml.getIngredient().getId())
-					.orElse(new Ingredient(ml.getIngredient().getName())), unitrepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName())), ml.getQuantity());
-			if(ml.getUnit().getId()<0)
-			unitrepo.save(tmp.getUnit());
-			if(ml.getIngredient().getId()<0)
-			ingrepo.save(tmp.getIngredient());
-			mllist.add(tmp);
-		}
-		
-		meal.setAuthor(author);
-		Set<Category> categorylist = new HashSet<>();
-		Category tmp = null;
-		for(Category c : meal.getCategories())
-		{
-					tmp = crepo.findById(c.getId()).orElse(new Category(c.getName()));
-					tmp.getMeals().add(meal);
-					categorylist.add(tmp);
-		}
-		meal.setCategories(categorylist);
-		meal.setMealingredient(mllist);
-		meal.setCreated(new Date());
-		repository.save(meal);
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.CREATED);
-	}
-	
-	@PostMapping("/sec/meals/all")
-	ResponseEntity<HttpStatus> addAllMeal(@RequestBody Meal[] meals)
-	{
-		for(Meal meal : meals) {
-		try {
-		User author = urepo.findById(meal.getAuthor().getId()).orElse(new User());
-		Set<MealIngredient> mllist = new HashSet<>();
-		for(MealIngredient ml : meal.getMealingredient()) {
-			MealIngredient tmp = new MealIngredient(meal, ingrepo.findById(
-					ml.getIngredient().getId())
-					.orElse(new Ingredient(ml.getIngredient().getName())), unitrepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName())), ml.getQuantity());
-			if(ml.getUnit().getId()<0)
-			unitrepo.save(tmp.getUnit());
-			if(ml.getIngredient().getId()<0)
-			ingrepo.save(tmp.getIngredient());
-			mllist.add(tmp);
-		}
-		
-		meal.setAuthor(author);
-		Set<Category> categorylist = new HashSet<>();
-		Category tmp = null;
-		for(Category c : meal.getCategories())
-		{
-					tmp = crepo.findById(c.getId()).orElse(new Category(c.getName()));
-					tmp.getMeals().add(meal);
-					categorylist.add(tmp);
-		}
-		meal.setCategories(categorylist);
-		meal.setMealingredient(mllist);
-		meal.setCreated(new Date());
-		repository.save(meal);
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		}
-		return new ResponseEntity<>(HttpStatus.CREATED);
-	}
+    @Autowired
+    MealRepository repository;
+    @Autowired
+    UserRepository urepo;
+    @Autowired
+    CategoryRepository crepo;
+    @Autowired
+    UnitRepository unitrepo;
+    @Autowired
+    IngredientRepository ingrepo;
+
+    @GetMapping("/meals/{id}")
+    ResponseEntity<Optional<Meal>> one(@PathVariable long id) {
+        Optional<Meal> c = repository.findById(id);
+        if (c != null)
+            return new ResponseEntity<>(c, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @RequestMapping(value = "/meals/category", method = RequestMethod.GET)
+    ResponseEntity<Page<Meal>> allByCategoryPage(@RequestParam(name = "id") List<Long> id, @PageableDefault(size = Integer.MAX_VALUE) Pageable pageable) {
+        Page<Meal> list = repository.findDistinctByCategoriesIn(crepo.findAllById(id), pageable);
+        if (list != null)
+            return new ResponseEntity<>(list, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @RequestMapping(value = "/meals", method = RequestMethod.GET)
+    ResponseEntity<Object> allByNamePage(@RequestParam(name = "q", required = false) String query, @PageableDefault(size = Integer.MAX_VALUE) Pageable pageable) {
+        if (query == null) query = "";
+        Page<Meal> list = repository.findDistinctByNameIgnoreCaseLike("%" + query + "%", pageable);
+        if (list != null) {
+            String s = JsonWrapper.removeFieldsFromPageable(list);
+            if (s != null)
+                return new ResponseEntity<>(s, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/sec/meals")
+    ResponseEntity<HttpStatus> addMeal(@RequestBody Meal meal) {
+        try {
+            User author = urepo.findById(meal.getAuthor().getId()).orElse(new User());
+            Set<MealIngredient> mllist = new HashSet<>();
+            for (MealIngredient ml : meal.getMealingredient()) {
+                MealIngredient tmp = new MealIngredient(meal, ingrepo.findById(
+                        ml.getIngredient().getId())
+                        .orElse(new Ingredient(ml.getIngredient().getName())), unitrepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName())), ml.getQuantity());
+                if (ml.getUnit().getId() < 0)
+                    unitrepo.save(tmp.getUnit());
+                if (ml.getIngredient().getId() < 0)
+                    ingrepo.save(tmp.getIngredient());
+                mllist.add(tmp);
+            }
+
+            meal.setAuthor(author);
+            Set<Category> categorylist = new HashSet<>();
+            Category tmp = null;
+            for (Category c : meal.getCategories()) {
+                tmp = crepo.findById(c.getId()).orElse(new Category(c.getName()));
+                tmp.getMeals().add(meal);
+                categorylist.add(tmp);
+            }
+            meal.setCategories(categorylist);
+            meal.setMealingredient(mllist);
+            meal.setCreated(new Date());
+            repository.save(meal);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/sec/meals/all")
+    ResponseEntity<HttpStatus> addAllMeal(@RequestBody Meal[] meals) {
+        for (Meal meal : meals) {
+            try {
+                User author = urepo.findById(meal.getAuthor().getId()).orElse(new User());
+                Set<MealIngredient> mllist = new HashSet<>();
+                for (MealIngredient ml : meal.getMealingredient()) {
+                    MealIngredient tmp = new MealIngredient(meal, ingrepo.findById(
+                            ml.getIngredient().getId())
+                            .orElse(new Ingredient(ml.getIngredient().getName())), unitrepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName())), ml.getQuantity());
+                    if (ml.getUnit().getId() < 0)
+                        unitrepo.save(tmp.getUnit());
+                    if (ml.getIngredient().getId() < 0)
+                        ingrepo.save(tmp.getIngredient());
+                    mllist.add(tmp);
+                }
+
+                meal.setAuthor(author);
+                Set<Category> categorylist = new HashSet<>();
+                Category tmp = null;
+                for (Category c : meal.getCategories()) {
+                    tmp = crepo.findById(c.getId()).orElse(new Category(c.getName()));
+                    tmp.getMeals().add(meal);
+                    categorylist.add(tmp);
+                }
+                meal.setCategories(categorylist);
+                meal.setMealingredient(mllist);
+                meal.setCreated(new Date());
+                repository.save(meal);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
 }
