@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.cloudinary.Api;
 import com.mealky.rest.model.ApiError;
 import com.mealky.rest.model.ApiResponse;
 import com.mealky.rest.model.PasswordResetToken;
@@ -32,6 +31,7 @@ import com.mealky.rest.repository.UserRepository;
 import com.mealky.rest.service.EmailSender;
 
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 @RestController
 public class UserController {
@@ -93,7 +93,7 @@ public class UserController {
             ucrepo.delete(uc);
             repository.delete(u);
             e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<Object>(new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()),HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -138,7 +138,7 @@ public class UserController {
             }
         }
         if (user.getPassword() == null && user.getEmail() == null)
-            return new ResponseEntity<>( new MessageWrapper(ApiError.INVALID_TOKEN.error()), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(ApiError.INVALID_TOKEN.error(), HttpStatus.NOT_FOUND);
 
         u = repository.findByEmail(user.getEmail());
         if (u == null)
@@ -162,7 +162,15 @@ public class UserController {
     }
 
     @GetMapping("/confirm")
-    public ResponseEntity<Object> accountConfirm(@RequestParam(name = "token", required = false) String token) {
+    public ModelAndView accountConfirm(@RequestParam(name = "token", required = false) String token) {
+    	ResponseEntity<Object> ret = confirmMethod(token);
+    	ModelAndView modelView = new ModelAndView("returnInfo");
+    	MessageWrapper body = (MessageWrapper) ret.getBody();
+    	modelView.addObject("message", body.getMessage());
+    	return modelView;
+    }
+    private ResponseEntity<Object> confirmMethod(String token)
+    {
         if (token != null) {
             try {
                 UserConfirmToken uc = ucrepo.findByEmailToken(token);
@@ -171,42 +179,62 @@ public class UserController {
                     u.setConfirmed(true);
                     repository.save(u);
                     ucrepo.delete(uc);
-                    return new ResponseEntity<>(ApiResponse.ACCOUNT_HAS_BEEN_ACTIVATED.response(), HttpStatus.OK);
+                    return new ResponseEntity<>(new MessageWrapper(ApiResponse.ACCOUNT_HAS_BEEN_ACTIVATED.response()), HttpStatus.OK);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<Object>(new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()),HttpStatus.NOT_FOUND);
     }
-
     @PostMapping("/changepassword")
-    public ResponseEntity<Object> changePassword(@RequestParam(name = "email", required = false) String email, @RequestParam(name = "oldpass", required = false) String currentpassword,
+    public ModelAndView changePassword(@RequestParam(name = "email", required = false) String email, @RequestParam(name = "oldpass", required = false) String currentpassword,
                                                  @RequestParam(name = "newpass", required = false) String newpass, @RequestParam(name = "confnewpass", required = false) String confnewpass) {
-        if (currentpassword == null || email == null || newpass == null || confnewpass == null)
-            return new ResponseEntity<>( new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()), HttpStatus.NOT_FOUND);
+        ResponseEntity<Object> returned = changePasswordMethod(email, currentpassword, newpass, confnewpass);
+    	ModelAndView modelView = new ModelAndView("returnInfo");
+    	MessageWrapper body = (MessageWrapper) returned.getBody();
+    	modelView.addObject("message", body.getMessage());
+    	return modelView;
+    }
+    private ResponseEntity<Object> changePasswordMethod(String email, String currentpassword, String newpass, String confnewpass)
+    {
+    	if (currentpassword == null || email == null || newpass == null || confnewpass == null)
+            return new ResponseEntity<>(ApiError.SOMETHING_WENT_WRONG.error(), HttpStatus.NOT_FOUND);
         User user = repository.findByEmail(email);
         if (user != null) {
             if (passwordEncoder.matches(currentpassword, user.getPassword())) {
                 if (newpass.equals(confnewpass) && checkPasswordLength(newpass) && checkPasswordLength(confnewpass)) {
                     user.setPassword(passwordEncoder.encode(newpass));
                     repository.save(user);
-                    return new ResponseEntity<Object>(
-                            ApiResponse.NEW_PASSWORD_SET.response(), HttpStatus.OK);
+                    return new ResponseEntity<Object>(new MessageWrapper(
+                            ApiResponse.NEW_PASSWORD_SET.response()), HttpStatus.OK);
                 }
-                return new ResponseEntity<>(
-						new MessageWrapper(ApiError.PASSWORDS_DOES_NOT_MATCH.error()), HttpStatus.CONFLICT);
+                return new ResponseEntity<>(new MessageWrapper(
+                        ApiError.PASSWORDS_DOES_NOT_MATCH.error()), HttpStatus.CONFLICT);
             }
-            return new ResponseEntity<>(
-					new MessageWrapper(ApiError.WRONG_PASSWORD.error()), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new MessageWrapper(
+                    ApiError.WRONG_PASSWORD.error()), HttpStatus.CONFLICT);
         }
-        return new ResponseEntity<>(
-				new MessageWrapper(ApiError.NO_SUCH_USER.error()), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new MessageWrapper(
+                ApiError.NO_SUCH_USER.error()), HttpStatus.NOT_FOUND);
     }
-
     @PostMapping("/resetpassword")
     public ResponseEntity<Object> sendResetPasswordToken(@RequestParam(name = "email", required = false) String email) {
+    	return resetPassword(email);
+    }
+
+    @PostMapping("/resetpasswordform")
+    public ModelAndView sendResetPasswordTokenForm(@RequestParam(name = "email", required = false) String email) {
+    	ResponseEntity<Object> ret = resetPassword(email);
+    	ModelAndView modelView = new ModelAndView("returnInfo");
+    	MessageWrapper body = (MessageWrapper) ret.getBody();
+    	modelView.addObject("message", body.getMessage());
+    	return modelView;
+    }
+    
+    private ResponseEntity<Object> resetPassword(String email)
+    {
         if (email != null) {
             User user = repository.findByEmail(email);
             if (user != null) {
@@ -220,20 +248,30 @@ public class UserController {
                     emailservice.sendResetPassMail(prt);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                    return new ResponseEntity<Object>(new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()),HttpStatus.INTERNAL_SERVER_ERROR);
                 }
-                return new ResponseEntity<Object>(ApiResponse.RESET_LINK_SENT.response(), HttpStatus.OK);
+                return new ResponseEntity<Object>(new MessageWrapper(ApiResponse.RESET_LINK_SENT.response()), HttpStatus.OK);
             }
-            return new ResponseEntity<Object>( new MessageWrapper(ApiError.NO_SUCH_USER.error()), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<Object>(new MessageWrapper(ApiError.NO_SUCH_USER.error()), HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<Object>( new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<Object>(new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()), HttpStatus.NOT_FOUND);
+    }
+    
+    
+    @PostMapping("/setpassword")
+    public ModelAndView setNewPassword(@RequestParam(name = "token", required = false) String token, @RequestParam(name = "email", required = false) String email,
+                                                 @RequestParam(name = "newpass", required = false) String newpass, @RequestParam(name = "confnewpass", required = false) String confnewpass) {
+    	ResponseEntity<Object> ret = setPassword(token, email, newpass, confnewpass);
+    	ModelAndView modelView = new ModelAndView("returnInfo");
+    	MessageWrapper body = (MessageWrapper) ret.getBody();
+    	modelView.addObject("message", body.getMessage());
+    	return modelView;
     }
 
-    @PostMapping("/setpassword")
-    public ResponseEntity<Object> setNewPassword(@RequestParam(name = "token", required = false) String token, @RequestParam(name = "email", required = false) String email,
-                                                 @RequestParam(name = "newpass", required = false) String newpass, @RequestParam(name = "confnewpass", required = false) String confnewpass) {
+    private ResponseEntity<Object> setPassword(String token,String email,String newpass,String confnewpass)
+    {
         if (token == null || email == null || newpass == null || confnewpass == null)
-            return new ResponseEntity<>( new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(ApiError.SOMETHING_WENT_WRONG.error(), HttpStatus.NOT_FOUND);
         PasswordResetToken prt = passrepo.findByToken(token);
         if (prt != null) {
             User user = prt.getUser();
@@ -242,15 +280,14 @@ public class UserController {
                     user.setPassword(passwordEncoder.encode(newpass));
                     repository.save(user);
                     passrepo.delete(prt);
-                    return new ResponseEntity<Object>(ApiResponse.NEW_PASSWORD_SET.response(), HttpStatus.OK);
+                    return new ResponseEntity<Object>(new MessageWrapper(ApiResponse.NEW_PASSWORD_SET.response()), HttpStatus.OK);
                 }
-                return new ResponseEntity<>(
-						new MessageWrapper(ApiError.PASSWORDS_DOES_NOT_MATCH.error()), HttpStatus.CONFLICT);
+                return new ResponseEntity<>(new MessageWrapper(
+                        ApiError.PASSWORDS_DOES_NOT_MATCH.error()), HttpStatus.CONFLICT);
             }
-            return new ResponseEntity<>(
-					new MessageWrapper(ApiError.EMAILS_DOES_NOT_MATCH.error()), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new MessageWrapper(
+                    ApiError.EMAILS_DOES_NOT_MATCH.error()), HttpStatus.CONFLICT);
         }
-        return new ResponseEntity<>( new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new MessageWrapper(ApiError.SOMETHING_WENT_WRONG.error()), HttpStatus.NOT_FOUND);
     }
-
 }

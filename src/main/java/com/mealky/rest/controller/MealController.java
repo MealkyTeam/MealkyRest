@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -55,7 +53,7 @@ public class MealController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @RequestMapping(value = "/meals/category", method = RequestMethod.GET)
+    @GetMapping("/meals/category")
     ResponseEntity<Page<Meal>> allByCategoryPage(@RequestParam(name = "id") List<Long> id, @PageableDefault(size = Integer.MAX_VALUE) Pageable pageable) {
         Page<Meal> list = repository.findDistinctByCategoriesIn(crepo.findAllById(id), pageable);
         if (list != null)
@@ -63,7 +61,7 @@ public class MealController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @RequestMapping(value = "/meals", method = RequestMethod.GET)
+    @GetMapping("/meals")
     ResponseEntity<Object> allByNamePage(@RequestParam(name = "q", required = false) String query, @PageableDefault(size = Integer.MAX_VALUE) Pageable pageable) {
         if (query == null) query = "";
         Page<Meal> list = repository.findDistinctByNameIgnoreCaseLike("%" + query + "%", pageable);

@@ -10,16 +10,19 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.mealky.config.ConfigProperties;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	private static String REALM="Mealky REST";
-	
+	@Autowired
+	ConfigProperties config;
 	@Autowired
 	public void configureGlobalSecurity(AuthenticationManagerBuilder auth) throws Exception {
 		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-		auth.inMemoryAuthentication().withUser("LOGIN").password(encoder.encode("PASSWORD")).roles("ADMIN");
+		auth.inMemoryAuthentication().withUser(config.getBasicauthlogin()).password(encoder.encode(config.getBasicauthpassword())).roles("ADMIN");
 	}
 	
 	@Override
