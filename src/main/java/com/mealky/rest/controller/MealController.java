@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mealky.rest.model.ApiError;
 import com.mealky.rest.model.Category;
 import com.mealky.rest.model.Ingredient;
 import com.mealky.rest.model.Meal;
@@ -26,6 +27,7 @@ import com.mealky.rest.model.MealIngredient;
 import com.mealky.rest.model.Unit;
 import com.mealky.rest.model.User;
 import com.mealky.rest.model.wrapper.JsonWrapper;
+import com.mealky.rest.model.wrapper.MessageWrapper;
 import com.mealky.rest.repository.CategoryRepository;
 import com.mealky.rest.repository.IngredientRepository;
 import com.mealky.rest.repository.MealRepository;
@@ -74,18 +76,40 @@ public class MealController {
     }
 
     @PostMapping("/sec/meals")
-    ResponseEntity<HttpStatus> addMeal(@RequestBody Meal meal) {
+    ResponseEntity<Object> addMeal(@RequestBody Meal meal) {
+    	if(meal.getName()==null || meal.getName().equals(""))
+    		return new ResponseEntity<>(
+                    new MessageWrapper(ApiError.MEAL_NAME_EMPTY.error()), HttpStatus.CONFLICT);
+    	if(meal.getPrep_time()<=0)
+    		return new ResponseEntity<>(
+                    new MessageWrapper(ApiError.MEAL_PREP_TIME.error()), HttpStatus.CONFLICT);
+    	if(meal.getMealingredient().size()<=0)
+    		return new ResponseEntity<>(
+                    new MessageWrapper(ApiError.MEAL_INGREDIENT.error()), HttpStatus.CONFLICT);
+      	if(meal.getImages().length<=0 || meal.getImages().length>=6)
+    		return new ResponseEntity<>(
+                    new MessageWrapper(ApiError.MEAL_IMAGE.error()), HttpStatus.CONFLICT);
+      	if(meal.getPreparation()==null || meal.getPreparation().length()<=0)
+    		return new ResponseEntity<>(
+                    new MessageWrapper(ApiError.MEAL_DESCRIPTION.error()), HttpStatus.CONFLICT);
         try {
             User author = urepo.findById(meal.getAuthor().getId()).orElse(new User());
             Set<MealIngredient> mllist = new HashSet<>();
+            Ingredient tmpIngredient = new Ingredient();
             for (MealIngredient ml : meal.getMealingredient()) {
-                MealIngredient tmp = new MealIngredient(meal, ingrepo.findById(
-                        ml.getIngredient().getId())
-                        .orElse(new Ingredient(ml.getIngredient().getName())), unitrepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName())), ml.getQuantity());
+            	
+                MealIngredient tmp = new MealIngredient(meal,
+                		ingrepo.findById(ml.getIngredient().getId()).orElse(new Ingredient(ml.getIngredient().getName())), 
+                		unitrepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName())), ml.getQuantity());
                 if (ml.getUnit().getId() < 0)
                     unitrepo.save(tmp.getUnit());
-                if (ml.getIngredient().getId() < 0)
+                if (ml.getIngredient().getId() < 0) {
+                	if((tmpIngredient = ingrepo.findDistinctByNameIgnoreCaseLike(ml.getIngredient().getName()))==null) {
                     ingrepo.save(tmp.getIngredient());
+                	}else {
+                        tmp.setIngredient(tmpIngredient);
+                    }
+                } 
                 mllist.add(tmp);
             }
 
@@ -109,19 +133,41 @@ public class MealController {
     }
 
     @PostMapping("/sec/meals/all")
-    ResponseEntity<HttpStatus> addAllMeal(@RequestBody Meal[] meals) {
+    ResponseEntity<Object> addAllMeal(@RequestBody Meal[] meals) {
         for (Meal meal : meals) {
+        	if(meal.getName()==null || meal.getName().equals(""))
+        		return new ResponseEntity<>(
+                        new MessageWrapper(ApiError.MEAL_NAME_EMPTY.error()), HttpStatus.CONFLICT);
+        	if(meal.getPrep_time()<=0)
+        		return new ResponseEntity<>(
+                        new MessageWrapper(ApiError.MEAL_PREP_TIME.error()), HttpStatus.CONFLICT);
+        	if(meal.getMealingredient().size()<=0)
+        		return new ResponseEntity<>(
+                        new MessageWrapper(ApiError.MEAL_INGREDIENT.error()), HttpStatus.CONFLICT);
+          	if(meal.getImages().length<=0 || meal.getImages().length>=6)
+        		return new ResponseEntity<>(
+                        new MessageWrapper(ApiError.MEAL_IMAGE.error()), HttpStatus.CONFLICT);
+          	if(meal.getPreparation()==null || meal.getPreparation().length()<=0)
+        		return new ResponseEntity<>(
+                        new MessageWrapper(ApiError.MEAL_DESCRIPTION.error()), HttpStatus.CONFLICT);
             try {
                 User author = urepo.findById(meal.getAuthor().getId()).orElse(new User());
                 Set<MealIngredient> mllist = new HashSet<>();
+                Ingredient tmpIngredient = new Ingredient();
                 for (MealIngredient ml : meal.getMealingredient()) {
-                    MealIngredient tmp = new MealIngredient(meal, ingrepo.findById(
-                            ml.getIngredient().getId())
-                            .orElse(new Ingredient(ml.getIngredient().getName())), unitrepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName())), ml.getQuantity());
+                	
+                    MealIngredient tmp = new MealIngredient(meal,
+                    		ingrepo.findById(ml.getIngredient().getId()).orElse(new Ingredient(ml.getIngredient().getName())), 
+                    		unitrepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName())), ml.getQuantity());
                     if (ml.getUnit().getId() < 0)
                         unitrepo.save(tmp.getUnit());
-                    if (ml.getIngredient().getId() < 0)
+                    if (ml.getIngredient().getId() < 0) {
+                    	if((tmpIngredient = ingrepo.findDistinctByNameIgnoreCaseLike(ml.getIngredient().getName()))==null) {
                         ingrepo.save(tmp.getIngredient());
+                    	}else {
+                            tmp.setIngredient(tmpIngredient);
+                        }
+                    } 
                     mllist.add(tmp);
                 }
 

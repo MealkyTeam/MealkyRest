@@ -17,6 +17,16 @@ public class JsonWrapper {
 		String s = null;
 		try {
 			node = om.readTree(om.writeValueAsString(list));
+			Long date;
+			int loop = ((ObjectNode)node).get("numberOfElements").asInt();
+			JsonNode tmp;
+			for(int i=0;i<loop;i++)
+			{
+				date = ((ObjectNode)node).get("content").get(i).get("created").asLong();
+				tmp = ((ObjectNode)node).get("content").get(i);
+				((ObjectNode)tmp).put("created", new java.util.Date(date).toString());
+			}
+			((ObjectNode)node).remove("created");
 			((ObjectNode)node).remove("pageable");
 			((ObjectNode)node).set("sorted", ((ObjectNode)node).get("sort").get("sorted"));
 			((ObjectNode)node).remove("sort");

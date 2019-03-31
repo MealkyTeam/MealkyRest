@@ -1,21 +1,14 @@
 package com.mealky.rest.model;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name="customuser")
@@ -27,22 +20,6 @@ public class User {
 		private String token;
 		private Date tokenDate;
 		private boolean confirmed = false;
-		//
-		//@ManyToMany(fetch = FetchType.LAZY,
-		//cascade = {
-		//		CascadeType.PERSIST,
-		//		CascadeType.MERGE
-		//},
-		//mappedBy ="favourite")
-		//@JsonIgnoreProperties({"users","categories"})
-		//Set<Meal> meals = new HashSet<>();
-		//@JsonIgnore
-		//public Set<Meal> getMeals() {
-		//	return meals;
-		//}
-		//public void setMeals(Set<Meal> meals) {
-		//	this.meals = meals;
-		//}
 		
 		@Id
 		@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -91,7 +68,6 @@ public class User {
 		public void setConfirmed(boolean confirmed) {
 			this.confirmed = confirmed;
 		}
-		
 		public User() {
 			super();
 		}

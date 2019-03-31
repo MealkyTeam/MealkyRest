@@ -14,8 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity
 @Table(name="meal_ingredient")
 public class MealIngredient implements Serializable{
-
-	private static final long serialVersionUID = 7790375849350202175L;
+	private static final long serialVersionUID = 1L;
 	private Meal meal;
 	private Ingredient ingredient;
 	private Unit unit;

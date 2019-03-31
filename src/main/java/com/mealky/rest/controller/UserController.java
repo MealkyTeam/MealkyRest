@@ -76,6 +76,7 @@ public class UserController {
                 new MessageWrapper(ApiError.EMAIL_TAKEN.error()), HttpStatus.CONFLICT);
         if (repository.findByUsername(user.getUsername()) != null) return new ResponseEntity<>(
                 new MessageWrapper(ApiError.USERNAME_TAKEN.error()), HttpStatus.CONFLICT);
+        
         UserConfirmToken uc = new UserConfirmToken();
         User u = new User();
         try {

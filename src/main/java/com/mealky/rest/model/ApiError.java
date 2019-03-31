@@ -17,6 +17,12 @@ public enum ApiError {
     PASSWORDS_DOES_NOT_MATCH("New passwords do not matches or are too short."),
     EMAILS_DOES_NOT_MATCH("Emails does not match."),
 
+    MEAL_NAME_EMPTY("Meal name can not be empty."),
+	MEAL_PREP_TIME("Meal preparation time lower can not be lower than 1."),
+	MEAL_DESCRIPTION("Meal description can not be empty."),
+	MEAL_INGREDIENT("Meal should contain atleast one ingredient."),
+	MEAL_IMAGE("Meal should contain atleast one image, maximum five images."),
+    
     SOMETHING_WENT_WRONG("Something went wrong.");
 
     private String error;

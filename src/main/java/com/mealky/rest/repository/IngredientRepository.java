@@ -9,4 +9,5 @@ import com.mealky.rest.model.Ingredient;
 
 public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
 	public Page<Ingredient> findDistinctByNameIgnoreCaseLike(String query,Pageable pageable);
+	public Ingredient findDistinctByNameIgnoreCaseLike(String name);
 }

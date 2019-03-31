@@ -12,17 +12,18 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PostLoad;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mealky.rest.model.wrapper.IngredientWrapper;
 
@@ -45,7 +46,6 @@ public class Meal {
 		super();
 	}
 	
-	
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "author")
 	@JsonIgnoreProperties({"meals","password","email","token","tokenDate","confirmed"})
@@ -55,25 +55,6 @@ public class Meal {
 	public void setAuthor(User author) {
 		this.author = author;
 	}
-	
-	
-//	@ManyToMany(fetch = FetchType.LAZY,
-//			cascade = {
-//					CascadeType.PERSIST,
-//					CascadeType.MERGE
-//			})
-//	@JoinTable(name="users",
-//		joinColumns = { @JoinColumn(name="user_id")},
-//		inverseJoinColumns = { @JoinColumn(name="meal_id")})
-//	@JsonIgnoreProperties({"favourite","meals"})
-//	Set<User> favourite = new HashSet<>();
-//	public Set<User> getFavourite() {
-//		return favourite;
-//	}
-//	public void setFavourite(Set<User> favourite) {
-//		this.favourite = favourite;
-//	}
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public long getId() {
@@ -82,12 +63,14 @@ public class Meal {
 	public void setId(long id) {
 		this.id = id;
 	}
+	@NotNull
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Min(1)
 	public int getPrep_time() {
 		return prep_time;
 	}
@@ -95,6 +78,7 @@ public class Meal {
 		this.prep_time = prep_time;
 	}
 	@Column(length=5000)
+	@NotNull
 	public String getPreparation() {
 		return preparation;
 	}
@@ -142,6 +126,7 @@ public class Meal {
 	
 	@OneToMany(mappedBy = "meal",cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
+	@Size(min=1)
 	public Set<MealIngredient> getMealingredient() {
 		return mealingredient;
 	}

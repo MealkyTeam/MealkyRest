@@ -55,9 +55,5 @@ public class Ingredient {
 	public Ingredient() {
 		super();
 	}
-	@Override
-	public String toString() {
-		return "Ingredient [id=" + id + ", name=" + name +"]";
-	}
 	
 }

@@ -34,7 +34,6 @@ public class Unit {
 		this.id = id;
 		this.name = name;
 	}
-
 	public Unit(String name) {
 		super();
 		this.name = name;

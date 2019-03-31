@@ -35,6 +35,4 @@ public class PasswordResetToken {
 	public PasswordResetToken() {
 		super();
 	}
-	
-	
 }
