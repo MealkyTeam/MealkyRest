@@ -22,7 +22,7 @@ public class IngredientWrapper {
 		return name;
 	}
 	public void setName(String name) {
-		this.name = name;
+		this.name = name.trim().replaceAll("[ \\t\\x0B\\f\\r]+", " ");
 	}
 	public Unit getUnit() {
 		return unit;

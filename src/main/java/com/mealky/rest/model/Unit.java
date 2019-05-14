@@ -1,5 +1,6 @@
 package com.mealky.rest.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,22 +21,18 @@ public class Unit {
 	public void setId(long id) {
 		this.id = id;
 	}
+	@Column(unique=true)
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
-		this.name = name;
+		this.name = name == null ? name : name.trim().replaceAll("[ \\t\\x0B\\f\\r]+", " ");
 	}
 	public Unit() {
 		super();
 	}
-	public Unit(long id, String name) {
-		super();
-		this.id = id;
-		this.name = name;
-	}
 	public Unit(String name) {
 		super();
-		this.name = name;
+		this.name = name == null ? name : name.trim().replaceAll("[ \\t\\x0B\\f\\r]+", " ");
 	}
 }

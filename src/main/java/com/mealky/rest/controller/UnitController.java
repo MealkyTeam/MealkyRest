@@ -47,6 +47,7 @@ public class UnitController {
     @PostMapping("/sec/units")
     ResponseEntity<HttpStatus> addUnit(@RequestBody Unit unit) {
         try {
+        	if(repository.findDistinctByNameIgnoreCaseLike(unit.getName())==null)
             repository.save(unit);
         } catch (Exception e) {
             e.printStackTrace();
@@ -59,7 +60,9 @@ public class UnitController {
     ResponseEntity<HttpStatus> addAllUnit(@RequestBody Unit[] unit) {
         try {
             for (Unit u : unit)
+            	if(repository.findDistinctByNameIgnoreCaseLike(u.getName())==null) {
                 repository.save(u);
+            	}
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

@@ -72,9 +72,9 @@ public class UserController {
                 new MessageWrapper(ApiError.INVALID_USERNAME.error()), HttpStatus.CONFLICT);
         if (!checkPasswordLength(user.getPassword())) return new ResponseEntity<>(
                 new MessageWrapper(ApiError.INVALID_PASSWORD.error()), HttpStatus.CONFLICT);
-        if (repository.findByEmail(user.getEmail()) != null) return new ResponseEntity<>(
+        if (repository.findDistinctByEmailIgnoreCaseLike(user.getEmail()) != null) return new ResponseEntity<>(
                 new MessageWrapper(ApiError.EMAIL_TAKEN.error()), HttpStatus.CONFLICT);
-        if (repository.findByUsername(user.getUsername()) != null) return new ResponseEntity<>(
+        if (repository.findDistinctByUsernameIgnoreCaseLike(user.getUsername()) != null) return new ResponseEntity<>(
                 new MessageWrapper(ApiError.USERNAME_TAKEN.error()), HttpStatus.CONFLICT);
         
         UserConfirmToken uc = new UserConfirmToken();
@@ -141,7 +141,7 @@ public class UserController {
         if (user.getPassword() == null && user.getEmail() == null)
             return new ResponseEntity<>(ApiError.INVALID_TOKEN.error(), HttpStatus.NOT_FOUND);
 
-        u = repository.findByEmail(user.getEmail());
+        u = repository.findDistinctByEmailIgnoreCaseLike(user.getEmail());
         if (u == null)
             return new ResponseEntity<>(new MessageWrapper(ApiError.NO_SUCH_USER.error()), HttpStatus.NOT_FOUND);
         if (!u.isConfirmed())
@@ -202,7 +202,7 @@ public class UserController {
     {
     	if (currentpassword == null || email == null || newpass == null || confnewpass == null)
             return new ResponseEntity<>(ApiError.SOMETHING_WENT_WRONG.error(), HttpStatus.NOT_FOUND);
-        User user = repository.findByEmail(email);
+        User user = repository.findDistinctByEmailIgnoreCaseLike(email);
         if (user != null) {
             if (passwordEncoder.matches(currentpassword, user.getPassword())) {
                 if (newpass.equals(confnewpass) && checkPasswordLength(newpass) && checkPasswordLength(confnewpass)) {
@@ -237,9 +237,9 @@ public class UserController {
     private ResponseEntity<Object> resetPassword(String email)
     {
         if (email != null) {
-            User user = repository.findByEmail(email);
+            User user = repository.findDistinctByEmailIgnoreCaseLike(email);
             if (user != null) {
-                PasswordResetToken prt = passrepo.findByUser_Email(email);
+                PasswordResetToken prt = passrepo.findByUser_EmailIgnoreCaseLike(email);
                 if (prt == null)
                     prt = new PasswordResetToken();
                 prt.setToken(UUID.randomUUID().toString().replace("-", ""));

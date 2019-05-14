@@ -40,7 +40,7 @@ public class MealIngredient implements Serializable{
 			this.ingredient = ingredient;
 		}
 		@Id
-		@ManyToOne(cascade = CascadeType.ALL)
+		@ManyToOne
 		@JoinColumn(name = "unit")
 		public Unit getUnit() {
 			return unit;

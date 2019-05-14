@@ -6,5 +6,5 @@ import com.mealky.rest.model.PasswordResetToken;
 
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long>{
 		PasswordResetToken findByToken(String token);
-		PasswordResetToken findByUser_Email(String email);
+		PasswordResetToken findByUser_EmailIgnoreCaseLike(String email);
 }

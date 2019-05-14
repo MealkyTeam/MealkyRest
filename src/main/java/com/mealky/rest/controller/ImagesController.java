@@ -1,5 +1,8 @@
 package com.mealky.rest.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +25,19 @@ public class ImagesController {
 	@Autowired
 	Cloudinary cloudinary;
 	@PostMapping("/sec/image")
-	public ResponseEntity<Object> testImage(@RequestParam("file") MultipartFile file)
+	public ResponseEntity<Object> uploadImage(@RequestParam("file") MultipartFile[] file)
 	{
   	Map uploadResult = null;
+  	List<String> urlList = new ArrayList<String>();
+  	Map<String,List<String>> map = new HashMap<>();
     try {
-        uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("transformation",
+    	for(MultipartFile  f : file) {
+        uploadResult = cloudinary.uploader().upload(f.getBytes(), ObjectUtils.asMap("transformation",
                 new Transformation().width(1280).height(720).crop("fit")));
-        return new ResponseEntity<Object>(new MessageWrapper((String) uploadResult.get("url")), HttpStatus.OK);
+        urlList.add((String)uploadResult.get("secure_url"));
+    	}
+    	map.put("images", urlList);
+        return new ResponseEntity<Object>(map, HttpStatus.OK);
     } catch (Exception e1) {
         e1.printStackTrace();
     }

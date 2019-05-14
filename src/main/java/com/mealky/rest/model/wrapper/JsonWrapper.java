@@ -17,6 +17,25 @@ public class JsonWrapper {
 		String s = null;
 		try {
 			node = om.readTree(om.writeValueAsString(list));
+			((ObjectNode)node).remove("created");
+			((ObjectNode)node).remove("pageable");
+			((ObjectNode)node).set("sorted", ((ObjectNode)node).get("sort").get("sorted"));
+			((ObjectNode)node).remove("sort");
+			((ObjectNode)node).remove("size");
+			s = om.writeValueAsString(node);
+			return s;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	public static <T> String removeFieldsFromPageableAndConvertDate(Page<T> list)
+	{
+		ObjectMapper om = new ObjectMapper();
+		JsonNode node;
+		String s = null;
+		try {
+			node = om.readTree(om.writeValueAsString(list));
 			Long date;
 			int loop = ((ObjectNode)node).get("numberOfElements").asInt();
 			JsonNode tmp;

@@ -6,6 +6,6 @@ import com.mealky.rest.model.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 	public User findByToken(String token);
-	public User findByUsername(String username);
-	public User findByEmail(String email);
+	public User findDistinctByUsernameIgnoreCaseLike(String username);
+	public User findDistinctByEmailIgnoreCaseLike(String email);
 }

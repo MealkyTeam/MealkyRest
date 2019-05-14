@@ -29,11 +29,12 @@ public class User {
 		public void setId(long id) {
 			this.id = id;
 		}
+		@Column(unique=true)
 		public String getUsername() {
 			return username;
 		}
 		public void setUsername(String username) {
-			this.username = username;
+			this.username = username == null ? username : username.trim().replaceAll("[ \\t\\x0B\\f\\r]+", " ");
 		}
 		@Column(length=100)
 		public String getPassword() {
@@ -42,11 +43,12 @@ public class User {
 		public void setPassword(String password) {
 			this.password = password;
 		}
+		@Column(unique=true)
 		public String getEmail() {
 			return email;
 		}
 		public void setEmail(String email) {
-			this.email = email;
+			this.email = email == null ? email : email.trim().replaceAll("[ \\t\\x0B\\f\\r]+", " ");
 		}
 		
 		public String getToken() {

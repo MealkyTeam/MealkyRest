@@ -47,7 +47,8 @@ public class IngredientController {
     @PostMapping("/sec/ingredients")
     ResponseEntity<HttpStatus> addIngredient(@RequestBody Ingredient ingredient) {
         try {
-            repository.save(ingredient);
+        	if(repository.findDistinctByNameIgnoreCaseLike(ingredient.getName())==null)
+        		repository.save(ingredient);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -59,7 +60,9 @@ public class IngredientController {
     ResponseEntity<HttpStatus> addAllIngredient(@RequestBody Ingredient[] ingredient) {
         try {
             for (Ingredient i : ingredient)
+            	if(repository.findDistinctByNameIgnoreCaseLike(i.getName())==null) {
                 repository.save(i);
+            	}
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

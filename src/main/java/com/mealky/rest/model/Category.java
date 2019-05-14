@@ -37,7 +37,7 @@ public class Category {
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.name = name == null ? name : name.trim().replaceAll("[ \\t\\x0B\\f\\r]+", " ");
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY,
@@ -63,19 +63,7 @@ public class Category {
 
 	public Category(String name) {
 		super();
-		this.name = name;
+		this.name = name == null ? name : name.trim().replaceAll("[ \\t\\x0B\\f\\r]+", " ");
 	}
 
-	public Category(long id, String name) {
-		super();
-		this.id = id;
-		this.name = name;
-	}
-
-	public Category(long id, String name, Set<Meal> meals) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.meals = meals;
-	}
 }

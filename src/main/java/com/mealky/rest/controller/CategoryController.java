@@ -39,6 +39,7 @@ public class CategoryController {
     @PostMapping("/sec/categories")
     ResponseEntity<HttpStatus> addCategory(@RequestBody Category category) {
         try {
+        	if(repository.findDistinctByNameIgnoreCaseLike(category.getName())==null)
             repository.save(category);
         } catch (Exception e) {
             e.printStackTrace();
@@ -51,7 +52,9 @@ public class CategoryController {
     ResponseEntity<HttpStatus> addAllCategory(@RequestBody Category[] category) {
         try {
             for (Category c : category)
+            	if(repository.findDistinctByNameIgnoreCaseLike(c.getName())==null) {
                 repository.save(c);
+            	}
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
