@@ -55,18 +55,4 @@ public class IngredientController {
         }
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
-
-    @PostMapping("/sec/ingredients/all")
-    ResponseEntity<HttpStatus> addAllIngredient(@RequestBody Ingredient[] ingredient) {
-        try {
-            for (Ingredient i : ingredient)
-            	if(repository.findDistinctByNameIgnoreCaseLike(i.getName())==null) {
-                repository.save(i);
-            	}
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
 }

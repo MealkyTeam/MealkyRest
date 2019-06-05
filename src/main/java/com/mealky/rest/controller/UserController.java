@@ -47,23 +47,6 @@ public class UserController {
     @Autowired
     PasswordResetTokenRepository passrepo;
 
-
-    @GetMapping("/sec/users")
-    ResponseEntity<List<User>> all() {
-        List<User> list = repository.findAll();
-        if (list != null)
-            return new ResponseEntity<>(list, HttpStatus.OK);
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    @GetMapping("/sec/users/{id}")
-    ResponseEntity<Optional<User>> one(@PathVariable long id) {
-        Optional<User> c = repository.findById(id);
-        if (c != null)
-            return new ResponseEntity<>(c, HttpStatus.OK);
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
     @PostMapping("/sec/signup")
     ResponseEntity<Object> addUser(@RequestBody User user) {
         if (!checkEmail(user.getEmail())) return new ResponseEntity<>(

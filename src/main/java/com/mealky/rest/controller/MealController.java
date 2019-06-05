@@ -144,8 +144,8 @@ public class MealController {
             for (IngredientWrapper ml : meal.getIngredients()) {
             	
                 MealIngredient tmp = new MealIngredient(newMeal,
-                		ingredientRepo.findById(ml.getId()).orElse(new Ingredient(ml.getName())), 
-                		unitRepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName())), ml.getQuantity());
+                		ingredientRepo.findById(ml.getId()).orElse(new Ingredient(ml.getName().toLowerCase())), 
+                		unitRepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName().toLowerCase())), ml.getQuantity());
                 if (ml.getUnit().getId() <= 0) {
                 	if((tmpUnit =unitRepo.findDistinctByNameIgnoreCaseLike(ml.getUnit().getName()))==null) {
                     unitRepo.save(tmp.getUnit());
@@ -175,80 +175,6 @@ public class MealController {
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @PostMapping("/sec/meals/all")
-    ResponseEntity<Object> addAllMeal(@RequestBody MealWrapper meals[]) {
-        for (MealWrapper meal : meals) {
-        	if(meal.getName()==null || meal.getName().equals(""))
-        		return new ResponseEntity<>(
-                        new MessageWrapper(ApiError.MEAL_NAME_EMPTY.error()), HttpStatus.CONFLICT);
-        	if(meal.getPrep_time()<=0)
-        		return new ResponseEntity<>(
-                        new MessageWrapper(ApiError.MEAL_PREP_TIME.error()), HttpStatus.CONFLICT);
-        	if(meal.getIngredients().size()<=0)
-        		return new ResponseEntity<>(
-                        new MessageWrapper(ApiError.MEAL_INGREDIENT.error()), HttpStatus.CONFLICT);
-          	if(meal.getImages().length<=0 || meal.getImages().length>=6)
-        		return new ResponseEntity<>(
-                        new MessageWrapper(ApiError.MEAL_IMAGE.error()), HttpStatus.CONFLICT);
-          	if(meal.getPreparation()==null || meal.getPreparation().length()<=0)
-        		return new ResponseEntity<>(
-                        new MessageWrapper(ApiError.MEAL_DESCRIPTION.error()), HttpStatus.CONFLICT);
-            try {
-                User author = userRepo.findById(meal.getAuthor().getId()).orElse(null);
-                if(author == null) {
-                	return new ResponseEntity<>(
-                            new MessageWrapper(ApiError.MEAL_USER.error()), HttpStatus.CONFLICT);
-                }
-                Meal newMeal = new Meal();
-                newMeal.setImages(meal.getImages());
-                newMeal.setCreated(new Date());
-                newMeal.setCategories(meal.getCategories());
-                newMeal.setName(meal.getName());
-                newMeal.setPrep_time(meal.getPrep_time());
-                newMeal.setPreparation(meal.getPreparation());
-                newMeal.setAuthor(author);
-                newMeal.setConfirmed(true);
-                Set<MealIngredient> mllist = new HashSet<>();
-                Ingredient tmpIngredient = new Ingredient();
-                Unit tmpUnit = new Unit();
-                for (IngredientWrapper ml : meal.getIngredients()) {
-                    MealIngredient tmp = new MealIngredient(newMeal,
-                    		ingredientRepo.findById(ml.getId()).orElse(new Ingredient(ml.getName())), 
-                    		unitRepo.findById(ml.getUnit().getId()).orElse(new Unit(ml.getUnit().getName())), ml.getQuantity());
-                    if (ml.getUnit().getId() <= 0) {
-                    	if((tmpUnit =unitRepo.findDistinctByNameIgnoreCaseLike(ml.getUnit().getName()))==null) {
-                        unitRepo.save(tmp.getUnit());
-                    	}else {
-                    		tmp.setUnit(tmpUnit);
-                    	}
-                    }
-                    if (ml.getId() <= 0) {
-                    	if((tmpIngredient = ingredientRepo.findDistinctByNameIgnoreCaseLike(ml.getName()))==null) {
-                        ingredientRepo.save(tmp.getIngredient());
-                    	}else {
-                            tmp.setIngredient(tmpIngredient);
-                        }
-                    } 
-                    mllist.add(tmp);
-                }
-                Set<Category> categorylist = new HashSet<>();
-                Category tmp = null;
-                for (Category c : meal.getCategories()) {
-                    tmp = categoryRepo.findById(c.getId()).orElse(new Category(c.getName()));
-                    tmp.getMeals().add(newMeal);
-                    categorylist.add(tmp);
-                }
-                newMeal.setCategories(categorylist);
-                newMeal.setMealingredient(mllist);
-                mealRepo.save(newMeal);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
         }
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
